@@ -1,48 +1,25 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+import Header from './Header';
+import Content from './Content';
+import './index.less';
 
-class Home extends React.Component{
-  constructor(props){
-    super(props);
-    this.state = {
-      num:0,
-    }
-  }
-  componentWillMount(){
-    console.log('组件将要加载');
-  }
-  componentWillReceiveProps(props){
-    console.log('props');
-  }
-  componentWillUpdate(){
-    console.log('组件将要更新');
-  }
-  componentDidUpdate(){
-    console.log('组件更新完成');
-  }
-  componentDidMount(){
-    console.log('组件加载完成');
-  }
-  handlerClick(){
-    // 修改状态唯一方法
-    this.setState({
-      num:this.state.num + 1
-    })
-  }
-  render(){
-    console.log(this.props.name)
+function Home() {
+
+    const dec = "为评估农药在农作物中的膳食摄入风险。采用急性膳食风险评估、慢性膳食风险评估、安全界限以及最大残留限量估计值进行风险计算。"
     return(
       <div className="main-container"> 
         <div id="case">
-          hello, <span>react {this.state.num}</span>
-          <button onClick={this.handlerClick.bind(this)}>摸我</button>
+          <div className="container">
+            <div className="row"><Header title={title} dec={dec}/></div>
+            <div className="row"><Content /></div>
+          </div>
         </div>
       </div>
     )
-  }
 }
-const title = 'active';
+const title = "膳食污染风险评估";
+
 ReactDOM.render(
   <Home name={title} />,
   document.getElementById('root')
