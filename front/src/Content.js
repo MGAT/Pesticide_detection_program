@@ -1,23 +1,39 @@
 import React, {useState, useEffect} from 'react';
 
-import {upload} from './api'
+import {upload, getLocationData, getCountCheck, getCountSample, getWeightData} from './api'
 
 import Chart_1 from './Chart_1';
 import Chart_2 from './Chart_2';
 import Chart_3 from './Chart_3';
 import Chart_4 from './Chart_4';
-import './content.less'
+// import './content.less'
 
 
 export default function(props){
   let [fileObject, setFileObject] = useState(null)
 
-   useEffect(() => {
+  const filename = encodeURIComponent('数据修改.xlsx')
+
+   useEffect( () => {
     const input = document.querySelector('input');
     input.style.opacity = 0;
     input.addEventListener('change', updateFileDisplay);
 
-    console.log(fileObject)
+    let payload = {filename};
+    let payload_wight = {filename, weight:60};
+
+     async function getMapData() {
+       let [location_data, sample_data, checked_data, weight_data] = await Promise.all([
+         getLocationData(payload),
+         getCountCheck(payload),
+         getCountSample(payload),
+         getWeightData(payload_wight),
+       ])
+
+       console.log(location_data, sample_data, checked_data, weight_data)
+
+     }
+
     if(fileObject){
       let fd = new FormData();
       fd.append("file", fileObject);
@@ -25,8 +41,29 @@ export default function(props){
       console.log({data:fd})
       let res = upload(fd);
       console.log(res)
+
+      // let [location_data, sample_data, checked_data, weight_data] = await Promise.all([
+      //   getLocationData(payload),
+      //   getCountCheck(payload),
+      //   getCountSample(payload),
+      //   getWeightData(payload_wight),
+      // ])
+
+      // console.log(location_data, sample_data, checked_data, weight_data)
+      // fetch(`http://127.0.0.1:5000/get/location?filename=${filename}`,{
+      //   headers: {
+      //     'content-type': 'application/json'
+      //   },
+      //   cache: "default",
+      //   mode: 'cors',
+      //   method: 'get'
+      // }).then(res=>res.json()).then(data => {
+      //   console.log(data)})
+
+      getMapData();
     }
-  })
+
+   })
 
   const updateFileDisplay = (e) => {
     console.log(e);
@@ -73,8 +110,8 @@ export default function(props){
           <div className="row-2">
               <div>
                 <label htmlFor ="files">点击上传文件 (.xml)</label>
-                <input type="file" id="files" name="files" 
-                accept=".doc,.docx,.xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
+                <input type="file" id="files" name="files"
+                accept=".doc,.docx,.xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 />
               </div>
               <div className="preview">
@@ -86,32 +123,32 @@ export default function(props){
           </div>
         </div>
       </div>
-      <div className="col-2">
-        <div className="row-1">
-          <p className="frp1">数据计算说明</p>
-          <hr className="line-wht-short" />
-          <p className="frp2">
-            借鉴英国兽药残留委员会兽药残留风险排序矩阵。用毒性指标代替药性指标。膳食比例( 水蜜桃占居民总膳食的百分率) 以及农药毒效( 即ADI 值) 、使用频率、高暴露人群、残留水平5项指标均采用原赋值标准，进行风险排序
-          </p>
-        </div>
-        <div className="row-2">
-          <div className="charts">
-            <div className="head">
-              <div>输出结果</div>
-              <div>
-                <div>图标展示数量</div>
-                <div>4</div>
-              </div>
-            </div>
-            <div className="container">
-              <div className="c-1"><Chart_1 /></div>
-              <div className="c-2"><Chart_2 /></div>
-              <div className="c-3"><Chart_3 /></div>
-              <div className="c-4"><Chart_4 /></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/*<div className="col-2">*/}
+      {/*  <div className="row-1">*/}
+      {/*    <p className="frp1">数据计算说明</p>*/}
+      {/*    <hr className="line-wht-short" />*/}
+      {/*    <p className="frp2">*/}
+      {/*      借鉴英国兽药残留委员会兽药残留风险排序矩阵。用毒性指标代替药性指标。膳食比例( 水蜜桃占居民总膳食的百分率) 以及农药毒效( 即ADI 值) 、使用频率、高暴露人群、残留水平5项指标均采用原赋值标准，进行风险排序*/}
+      {/*    </p>*/}
+      {/*  </div>*/}
+      {/*  <div className="row-2">*/}
+      {/*    <div className="charts">*/}
+      {/*      <div className="head">*/}
+      {/*        <div>输出结果</div>*/}
+      {/*        <div>*/}
+      {/*          <div>图标展示数量</div>*/}
+      {/*          <div>4</div>*/}
+      {/*        </div>*/}
+      {/*      </div>*/}
+      {/*      <div className="container">*/}
+      {/*        <div className="c-1"><Chart_1 /></div>*/}
+      {/*        <div className="c-2"><Chart_2 /></div>*/}
+      {/*        <div className="c-3"><Chart_3 /></div>*/}
+      {/*        <div className="c-4"><Chart_4 /></div>*/}
+      {/*      </div>*/}
+      {/*    </div>*/}
+      {/*  </div>*/}
+      {/*</div>*/}
     </div>
   )
 }
