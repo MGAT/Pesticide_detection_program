@@ -3,11 +3,10 @@ from . import config
 from decimal import Decimal
 import numpy as np
 
-
 def get_column_index_poison_json(sheet):
     arr = sheet.row_values(config.row_index_of_operation_order)
     degree_arr = sheet.row_values(config.row_index_of_toxic_degree)
-    arfd_ncbi_arr = sheet.row_values(config.row_index_of_arfd_ncbi)
+    arfd_ncbi_arr = sheet.row_values(config.row_index_of_arfd_ncbi)s
 
     i = config.column_index_of_operation_order + 1
     length = len(arr)

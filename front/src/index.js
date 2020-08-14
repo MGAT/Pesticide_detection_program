@@ -11,7 +11,7 @@ function Home() {
       <div className="main-container"> 
         <div id="case">
           <div className="container">
-            {/*<div className="row"><Header title={title} dec={dec}/></div>*/}
+            <div className="row"><Header title={title} dec={dec}/></div>
             <div className="row"><Content /></div>
           </div>
         </div>
