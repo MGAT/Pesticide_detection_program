@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 
-import {upload} from './api'
+import {upload, getLocationData, getCountCheck, getCountSample, getWeightData} from './api'
 
 import Chart_1 from './Chart_1';
 import Chart_2 from './Chart_2';
@@ -11,52 +11,70 @@ import './content.less'
 
 export default function(props){
   let [fileObject, setFileObject] = useState(null)
+  let [locationData, setLocationData] = useState(null)
+  let [sampleData, setSampleData] = useState(null)
+  let [checkedData, setCheckedData] = useState(null)
+  let [weightData, setWeightData] = useState(null)
 
-   useEffect(() => {
+  const filename = encodeURIComponent('数据修改.xlsx')
+
+   useEffect( () => {
     const input = document.querySelector('input');
     input.style.opacity = 0;
     input.addEventListener('change', updateFileDisplay);
 
-    console.log(fileObject)
     if(fileObject){
       let fd = new FormData();
       fd.append("file", fileObject);
       fd.append("filename", fileObject.name);
-      console.log({data:fd})
       let res = upload(fd);
-      console.log(res)
     }
-  })
+
+   })
 
   const updateFileDisplay = (e) => {
-    console.log(e);
     setFileObject(e.target.files[0])
     const input = document.querySelector('input');
     const preview = document.querySelector('.preview');
     
-    console.log(preview)
     while(preview.firstChild) {
       preview.removeChild(preview.firstChild);
     }
   
     const curFiles = input.files;
-    console.log(curFiles);
     if(curFiles.length === 0) {
       const para = document.createElement('p');
       para.textContent = 'No files currently selected for upload';
       preview.appendChild(para);
     } else {
-  
       for(const file of curFiles) {
         const para = document.createElement('p');
-
         para.textContent = `${file.name}`;
-
         preview.appendChild(para);
-
       }
     }
   };
+
+  async function getMapData() {
+    let payload = {filename};
+    let payload_wight = {filename, weight:60};
+
+    let [location_data, sample_data, checked_data, weight_data] = await Promise.all([
+      getLocationData(payload),
+      getCountCheck(payload),
+      getCountSample(payload),
+      getWeightData(payload_wight),
+    ])
+
+     setLocationData(location_data);
+     setSampleData(sample_data);
+     setCheckedData(checked_data);
+     setWeightData(weight_data);
+  }
+
+  async function submitParam(){
+    await getMapData();
+  }
 
   return(
     <div className="content-container">
@@ -73,8 +91,8 @@ export default function(props){
           <div className="row-2">
               <div>
                 <label htmlFor ="files">点击上传文件 (.xml)</label>
-                <input type="file" id="files" name="files" 
-                accept=".doc,.docx,.xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
+                <input type="file" id="files" name="files"
+                accept=".doc,.docx,.xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 />
               </div>
               <div className="preview">
@@ -82,7 +100,7 @@ export default function(props){
               </div>
           </div>
           <div className="row-3">
-            <button>提交</button>
+            <button onClick={submitParam}>提交</button>
           </div>
         </div>
       </div>
@@ -104,10 +122,10 @@ export default function(props){
               </div>
             </div>
             <div className="container">
-              <div className="c-1"><Chart_1 /></div>
-              <div className="c-2"><Chart_2 /></div>
-              <div className="c-3"><Chart_3 /></div>
-              <div className="c-4"><Chart_4 /></div>
+              <div className="c-1"><Chart_1 locationData={locationData}/></div>
+              <div className="c-2"><Chart_2 checkedData={checkedData}/></div>
+              <div className="c-3"><Chart_3 sampleData={sampleData}/></div>
+              <div className="c-4"><Chart_4 weightData={weightData}/></div>
             </div>
           </div>
         </div>
