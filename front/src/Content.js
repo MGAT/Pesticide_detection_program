@@ -23,6 +23,7 @@ export default function(props){
     input.style.opacity = 0;
     input.addEventListener('change', updateFileDisplay);
 
+
     if(fileObject){
       let fd = new FormData();
       fd.append("file", fileObject);
