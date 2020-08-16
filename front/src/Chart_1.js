@@ -1,65 +1,65 @@
 import React, {useEffect, useState} from "react";
 import echarts from 'echarts';
 import "echarts/map/js/china";
+import HeadChart from './ChartHead';
 
 export default function (props) {
   let [provinceValue, setProvinceValue] = useState(null);
-  // let [provinceData, setProvinceData] = useState([]);
-  // let [barData, setBarData] = useState([]);
 
   useEffect (() => {
      // 初始化chart
     initChart()
+    // console.log(props)
   })
 
   function initChart(){
     // 初始化echarts实例
     const myChart = echarts.init(document.getElementById('main_1'));
-
-    // console.log(props)
     
     let provinceData=props.locationData&&Object.keys(props.locationData).map(item=>{
       let num = Object.values(props.locationData[item]).reduce((a,b)=>(a+b.average), 0)
       return {name:item, value:num.toFixed(2)}
     }) || [];
 
-    // console.log(provinceData)
-
     let initProvinceValue = !!provinceData.length&&provinceData[0].name || null
-
     let barData = props.locationData&&Object.entries(props.locationData[provinceValue || initProvinceValue]).map(item=>({name:item[0], value:item[1].average.toFixed(2)})) || [];
 
-    // const getBarData = () => {
-    //   let res = props.locationData&&Object.entries(props.locationData[provinceValue || initProvinceValue]).map(item=>({name:item[0], value:item[1].average.toFixed(2)})) || [];
-    //   setBarData(res)
-    // }
-
-    // // getBarData();
+    let locationArr = props.locationData&&Object.keys(props.locationData) || []
 
     const option = {
         title: [{                   //标题
-            text: '销售量统计',
-            subtext: '纯属虚构',
-            left: 'left'
-        },{                         //右上角全部
-            text: '全部: ',
-            right: '54%',
-            top: 40,
-            width: 100,
+            text: '调查省份统计',
+            left: 10,
+            top: 10,
             textStyle: {
-                color: '#555',
-                fontSize: 16
+                color: '#999',
+                fontSize: 14
+            }
+        },{                         //右上角全部
+            text: provinceValue || initProvinceValue,
+            right: '40%',
+            top: 10,
+            textStyle: {
+                color: '#999',
+                fontSize: 14
             }
         }],
         tooltip: {
-            trigger: 'item'
+            // trigger: 'item'
+            formatter: (params) => {
+                let str='';
+                if(locationArr.includes(params.name)){
+                    str += `${params.seriesName}` + '<br/>' + `${params.marker} ${params.name}: ${params.value}`
+                }
+                return str;
+            }
+
         },
-        visualMap: {             　　//左下角拉条
+        visualMap: {         　　//左下角拉条
             show:false,
             min: 0,
             max: 2500,
             left: 'left',
-            top: '50',
             text: ['高', '低'],
             calculable: true,
             colorLightness: [0.2, 100],
@@ -68,18 +68,19 @@ export default function (props) {
         },
         toolbox: {                  //右边工具栏
             show: true,
-            orient: 'vertical',
-            left: 'right',
-            top: 'center',
+            // orient: 'vertical',
+            // left: 'right',
+            right:20,
+            top: 10,
             feature: {
                 saveAsImage: {}
             }
         },
         grid: {                 //右边的bar
-            right: '10%',
-            top: 100,
-            bottom: 0,
-            height:'50%',
+            right: 80,
+            top: 60,
+            bottom: 20,
+            // height:'50%',
             width: '30%'
         },
         xAxis: [{
@@ -105,17 +106,17 @@ export default function (props) {
         barWidth:30,
         series: [{              //地图
             z: 1,
-            name: '全部',
+            name: '总计',
             type: 'map',
             map: 'china',
-            left: '10',
-            right: '60%',
-            top: 100,
-            bottom: "45%",
+            left: '30',
+            right: '50%',
+            top: 80,
+            bottom: "15%",
             zoom: 1,
             label: {
                 normal: {
-                    show: false
+                    show: true
                 },
                 emphasis: {
                     show: true
@@ -124,16 +125,15 @@ export default function (props) {
             // roam: true,
             data: provinceData
         }, {                //bar
-            name: '全部',
+            name: provinceValue || initProvinceValue,
             z: 2,
             type: 'bar',
             barWidth: '%10',
             label: {
-                normal: {
-                    show: true
-                },
-                emphasis: {
-                    show: true,
+                show: true,
+                position: 'right',
+                textStyle: {
+                    color: '#2c6df8',
                 }
             },
             itemStyle: {
@@ -155,9 +155,29 @@ export default function (props) {
     });
   };
 
-  return <>
-    <div id="main_1" style={{ width: 1000, height: 600 }}>
+  const bg = "linear-gradient(90deg, #58DCAF, #4FAAD3)"
+  return (
+    <div className="location-chart">
+        <HeadChart title="农药残留量展示图" bgCokor={bg}/>
+        <div id="main_1" style={{ width: 960, height: 500 }}>
+        </div>
 
+        <style>{`
+            .location-chart{
+                background:#fff;
+                border-bottom-left-radius:5px;
+                border-bottom-right-radius:5px;
+                display: flex;
+                flex-direction:column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .main_1{
+                
+            }
+        `}</style>
     </div>
-  </>
+  )
+  
 }

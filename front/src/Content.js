@@ -97,7 +97,7 @@ export default function(props){
                 />
               </div>
               <div className="preview">
-                <p style={{color: 'red'}}>*暂无文件上传！</p>
+                <p style={{color: '#ff9900'}}>*暂无文件上传！</p>
               </div>
           </div>
           <div className="row-3">
@@ -119,15 +119,17 @@ export default function(props){
           <div className="head">
             <div className="left-text">输出结果</div>
             <div className="right-text">
-              <div>图标展示数量</div>
+              <div>图表展示数量</div>
               <div>4</div>
             </div>
           </div>
           <div className="border"></div>
           <div className="container">
             <div className="c-1"><Chart_1 locationData={locationData}/></div>
-            <div className="c-2"><Chart_2 checkedData={checkedData}/></div>
-            <div className="c-3"><Chart_3 sampleData={sampleData}/></div>
+            <div className="c-2">
+              <div className="r-2"><Chart_2 checkedData={checkedData}/></div>
+              <div className="r-3"><Chart_3 sampleData={sampleData}/></div>
+            </div>
             <div className="c-4"><Chart_4 weightData={weightData}/></div>
           </div>
         </div>

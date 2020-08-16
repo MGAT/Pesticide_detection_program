@@ -1,5 +1,6 @@
 import React, {useEffect} from "react";
 import echarts from 'echarts'
+import HeadChart from './ChartHead';
 
 export default function (props) {
   
@@ -8,9 +9,9 @@ export default function (props) {
         var myChart = echarts.init(document.getElementById('main_4'));
         // 处理数据
         console.log(props)
-        let data1 = props.weightData&&props.weightData.map(item=>({name:item.name, value: item.adi})) || [];
-        let data2 = props.weightData&&props.weightData.map(item=>({name:item.name, value: item.arfd})) || [];
-        let data3 = props.weightData&&props.weightData.map(item=>({name:item.name, value: item.average_score})) || [];
+        let data1 = props.weightData&&props.weightData.map(item=>({name:item.name, value: item.adi.toExponential(1)})) || [];
+        let data2 = props.weightData&&props.weightData.map(item=>({name:item.name, value: item.arfd.toFixed(2)})) || [];
+        let data3 = props.weightData&&props.weightData.map(item=>({name:item.name, value: item.average_score.toFixed(2)})) || [];
 
         console.log(data1, data2, data3)
 
@@ -66,16 +67,34 @@ export default function (props) {
         };
         
         let option = {
-          
+            title: [
+                {text: '急性风险', left: '5%', top:10, textStyle: {
+                    color: '#999',
+                    fontSize: 14
+                }},
+                {text: '慢性风险', left: '35%', top:10, textStyle: {
+                    color: '#999',
+                    fontSize: 14
+                }},
+                {text: '平均值',  left: '70%', top:10, textStyle: {
+                    color: '#999',
+                    fontSize: 14
+                }},
+            ],
+            toolbox: {                  //右边工具栏
+                show: true,
+                // orient: 'vertical',
+                // left: 'right',
+                right:20,
+                top: 10,
+                feature: {
+                    saveAsImage: {}
+                }
+              },
             tooltip: {},
-            title: [{
-                text: '在线构建',
-                subtext: '总计 ' + builderJson.all,
-                left: '25%',
-                textAlign: 'center'
-            }],
+            barWidth: 15,
             grid: [{
-                top: 50,
+                top: '5%',
                 width: '30%',
                 bottom: '5%',
                 left: 10,
@@ -91,27 +110,51 @@ export default function (props) {
               top: '5%',
               width: '30%',
               left: '66%',
-              bottom: 0,
+              bottom:'5%',
               containLabel: true
           }],
             xAxis: [{
                 type: 'value',
                 splitLine: {
                     show: false
-                }
+                },
+                axisLabel: {
+                    rotate: 45,
+                    show: true,
+                    textStyle: {
+                        color: '#000',
+                        fontSize:'12'
+                    }
+                  },
             }, {
                 type: 'value',
                 gridIndex: 1,
                 splitLine: {
                     show: false
-                }
+                },
+                axisLabel: {
+                    rotate: 45,
+                    show: true,
+                    textStyle: {
+                        color: '#000',
+                        fontSize:'12'
+                    }
+                  },
             },
             {
               type: 'value',
               gridIndex: 2,
               splitLine: {
                   show: false
-              }
+              },
+              axisLabel: {
+                rotate: 45,
+                show: true,
+                textStyle: {
+                    color: '#000',
+                    fontSize:'12'
+                }
+              },
           }],
             yAxis: [{
                 type: 'category',
@@ -193,7 +236,23 @@ export default function (props) {
         };
         myChart.setOption(option);
   })
-  return <>
-    <div id="main_4" style={{ width: 1000, height: 400 }}></div>
-  </>
+
+  const bg = "linear-gradient(90deg, #8DC8FE, #876FF1)"
+
+  return (
+    <div className="weight-chart">
+        <HeadChart title="农药风险得分排序展示图" bgCokor={bg}/>
+        <div id="main_4" style={{ width: "100%", height: 700 }}></div>
+
+        <style >{`
+          .weight-chart{
+              width:100%;
+              background:#fff;
+              border-bottom-left-radius:5px;
+              border-bottom-right-radius:5px;
+              margin-bottom: 20px;
+          }
+        `}</style>
+    </div>
+  )
 }
