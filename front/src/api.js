@@ -1,4 +1,3 @@
-import {request} from './utils/request';
 import qs from 'qs';
 
 const ApiRootUrl = "http://127.0.0.1:5000/";
@@ -12,13 +11,13 @@ const api = {
 }
 
 // 文件上传Api
-export async function upload(params){
+export function upload(params){
   let url = api.Upload;
   let options = {
       method:'POST',
       body:params,
     };
-  const res = await fetch(url, options);
+  const res = fetch(url, options);
   return res
 }
 

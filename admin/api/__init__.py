@@ -1,5 +1,11 @@
+import re
 
 if __name__ == '__main__':
-    s = {"a": 1, "b": 2}
-    for i in list(s.items()):
-        print(i[0], i[1])
+    pattern = re.compile(r'^[-+]?[0-9]+\.?[0-9]+$')
+
+    if pattern.match("111.12"):
+        print(11)
+
+    a = {"d":1}
+    print(a.pop("a"))
+    print(a)

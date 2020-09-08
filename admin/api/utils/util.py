@@ -1,12 +1,96 @@
-
+import re
 from . import config
 from decimal import Decimal
 import numpy as np
 
+pattern = re.compile(r'^[-+]?[0-9]+\.?[0-9]+$')
+
+cons_title_arr = ['C膳食比例得分', 'D农药使用频率得分', 'E高暴露人群得分']
+
+def get_product_constants(product_sheet) :
+    arr_title = product_sheet.row_values(0)
+    arr_value = product_sheet.row_values(1)
+    result = {}
+    for i, title in enumerate(arr_title):
+        title = title.replace(' ', '')
+        if len(title) != 0:
+            value = str(arr_value[i]).replace(' ', '')
+            result[title] = Decimal(value) if pattern.match(value) else value
+
+    return result
+
+
+def fill_out_sheet(product_params, data_sheet, ws):
+    title_arr = data_sheet.row_values(config.row_index_of_operation_order)
+    degree_arr = data_sheet.row_values(config.row_adi_value)
+    #the starting row index
+    data_row = config.row_index_of_operation_order + 1
+    nrows = data_sheet.nrows
+
+    while data_row < nrows:
+        data_cells = data_sheet.row_values(data_row)
+        for i, title in enumerate(title_arr):
+            if i < config.column_index_of_operation_order+1:
+                continue
+
+            title = title.replace(' ', '')
+            if title in cons_title_arr:
+                ws.write(data_row, i, product_params[title])
+                # data_cells[i] = product_params[title]
+                product_params["total_degrees"]['right'] += product_params[title]
+
+            elif (i-5) % 8 == 0:
+                product_params['adi_toxicity'] = float(degree_arr[i]) if degree_arr[i] != '' else 0.0
+                product_params['check_value'] = float(data_cells[i]) if data_cells[i] != '' else ''#代表未检出
+                product_params["total_degrees"] = {
+                    'left': 0,
+                    'right': 0
+                }
+
+            elif title == 'B毒效得分LOD50':
+                adi_toxicity = product_params.pop('adi_toxicity')
+                if adi_toxicity >= 0.01:
+                    adi_toxicity = 0
+                elif adi_toxicity >= 0.001:
+                    adi_toxicity = 1
+                elif adi_toxicity >= 0.0001:
+                    adi_toxicity = 2
+                else:
+                    adi_toxicity = 3
+                ws.write(data_row, i, adi_toxicity)
+                product_params["total_degrees"]['left'] += adi_toxicity
+
+            elif title == 'F残留水平得分':
+                check_value = product_params.pop('check_value')
+                if check_value == '':
+                    check_value = 1
+                elif check_value < 1:
+                    check_value = 2
+                elif check_value < 10:
+                    check_value = 3
+                else:
+                    check_value = 4
+                ws.write(data_row, i, check_value)
+                product_params["total_degrees"]['right'] += check_value
+
+            elif title == 'A毒性得分':
+                product_params["total_degrees"]['left'] += data_cells[i]
+
+            elif title.startswith("风险得分S"):
+                ws.write(data_row, i, Decimal(product_params["total_degrees"]['left']) * product_params["total_degrees"]['right'])
+                # data_cells[i] = product_params["total_degrees"]
+
+        data_row += 1
+
+    product_params.pop("total_degrees")
+    product_params.pop("adi_toxicity")
+    product_params.pop("check_value")
+
 def get_column_index_poison_json(sheet):
     arr = sheet.row_values(config.row_index_of_operation_order)
     degree_arr = sheet.row_values(config.row_index_of_toxic_degree)
-    arfd_ncbi_arr = sheet.row_values(config.row_index_of_arfd_ncbi)s
+    arfd_ncbi_arr = sheet.row_values(config.row_index_of_arfd_ncbi)
+    adi_everyday_arr = sheet.row_values(config.row_adi_everyday)
 
     i = config.column_index_of_operation_order + 1
     length = len(arr)
@@ -16,11 +100,14 @@ def get_column_index_poison_json(sheet):
         degree = degree_arr[i].replace(' ', '')
         if degree == '':
             break
+        adi_everyday = str(adi_everyday_arr[i]).replace(' ', '')
+        adi_everyday = Decimal(adi_everyday) if pattern.match(adi_everyday) else adi_everyday
 
         column_index_poison_json[str(i)] = {
             'degree': degree,
             'name': arr[i].replace(' ', ''),
-            'arfd_ncbi': Decimal(arfd_ncbi_arr[i]) if arfd_ncbi_arr[i] != 'unnecessary' else -1
+            'arfd_ncbi': Decimal(arfd_ncbi_arr[i]) if arfd_ncbi_arr[i] != 'unnecessary' else -1,
+            'adi_everyday': adi_everyday
         }
 
         i += config.interval_of_poisons
@@ -69,7 +156,7 @@ def compose_location_json(sheet, column_index_poison_json):
     return location_json
 
 #按照一个样品中检出的农药残留种类排序
-def compose_smaple_count(sheet):
+def compose_sample_count(sheet):
     data_row = config.row_index_of_operation_order + 1
     degree_arr = sheet.row_values(config.row_index_of_toxic_degree)
 
@@ -135,7 +222,7 @@ def compose_check_count(sheet, column_index_poison_json):
     return sorted(list(column_index_poison_json.values()), key=lambda x: x['cnt'], reverse=True)
 
 
-def compose_data_by_weight(sheet, column_index_poison_json, weight):
+def compose_data_by_weight(sheet, column_index_poison_json, product_params_json, weight):
     data_row = config.row_index_of_operation_order + 1
     nrows = sheet.nrows
 
@@ -167,18 +254,23 @@ def compose_data_by_weight(sheet, column_index_poison_json, weight):
         # print(value)
         value['average_value'] = np.mean(value['values'])
         value['average_score'] = np.mean(value['scores'])
-        value['adi'] = value['average_value'] * config.daily_consumption / weight / (config.daily_adi * 100)
+        value['adi'] = value['average_value'] * product_params_json['居民日均消费量/kg'] / weight / value['adi_everyday'] * 100
         value['percentile_99.9'] = np.percentile(value['values'], Decimal(99.9))
 
-        value['esti'] = (
-                            config.weight_per_fruit * value['percentile_99.9'] * config.mutate_factor +
-                            (config.big_meal - config.weight_per_fruit) * value['percentile_99.9'] / weight
-                        ) / weight
+        value['esti'] = (product_params_json['单果重/kg'] * value['percentile_99.9'] * config.mutate_factor +
+                 (product_params_json['大餐份/kg'] - product_params_json['单果重/kg']) * value['percentile_99.9']) / weight
+
         arfd_ncbi = value['arfd_ncbi']
         if arfd_ncbi == -1:
             value['arfd'] = -1
+            value['SM'] = None
+
         else:
             value['arfd'] = Decimal(value['esti']) / arfd_ncbi * 100
+            value['SM'] = arfd_ncbi * weight / (product_params_json['单果重/kg'] * config.mutate_factor
+                                                    + product_params_json['大餐份/kg'] - product_params_json['单果重/kg'])
+
+        value['eMRL'] = value['adi_everyday'] * weight / product_params_json['大餐份/kg']
 
         final_arr.append(value)
 

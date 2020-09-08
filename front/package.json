@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ant-design/compatible": "^1.0.5",
     "@babel/core": "7.9.0",
     "@svgr/webpack": "4.3.3",
     "@testing-library/jest-dom": "^4.2.4",
@@ -51,6 +52,7 @@
     "qs": "^6.9.4",
     "react": "^16.13.1",
     "react-app-polyfill": "^1.0.6",
+    "react-app-rewired": "^2.1.6",
     "react-dev-utils": "^10.2.1",
     "react-dom": "^16.13.1",
     "resolve": "1.15.0",
@@ -138,5 +140,8 @@
     "presets": [
       "react-app"
     ]
+  },
+  "devDependencies": {
+    "antd": "^4.6.2"
   }
 }

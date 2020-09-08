@@ -11,6 +11,9 @@ py -3 -m venv venv
 
 #pip3 install whatever is missing
 pip3 install Flask
+pip3 install CORS
+pip3 install xlrd
+pip3 install xlutils
 
 venv\Scripts\activate
 set FLASK_ENV=development
