@@ -17,8 +17,12 @@ export function upload(params){
       method:'POST',
       body:params,
     };
-  const res = fetch(url, options);
-  return res
+  return fetch(url, options).then(res=>{
+    return res.json()
+  }).then(json => {
+    // console.log(json)
+    return json
+  });
 }
 
 //获取地点的api

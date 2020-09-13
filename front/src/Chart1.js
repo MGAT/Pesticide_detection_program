@@ -64,10 +64,11 @@ export default function (props) {
         },
         visualMap: {         　　//左下角拉条
             show:true,
-            top:(chartHeight/2),
+            top:(chartHeight/2+50),
+            left: 10,
             min: 0,
             max: 1,
-            left: 'left',
+            // left: 'left',
             text: ['高', '低'],
             calculable: true,
             colorLightness: [0.2, 100],
@@ -86,10 +87,10 @@ export default function (props) {
             }
         },
         grid: {                 //右边的bar
-            right: 20,
+            right: 50,
             top: 80,
             bottom: 20,
-            left: '72%',
+            left: '70%',
             // height:'50%',
             width: '25%'
         },

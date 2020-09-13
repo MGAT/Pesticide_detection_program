@@ -7,6 +7,8 @@ import Chart1 from './Chart1';
 import Chart2 from './Chart2';
 import Chart3 from './Chart3';
 import Chart4 from './Chart4';
+import Chart5 from './Chart5';
+
 import './content.less';
 
 export default function(props){
@@ -30,6 +32,9 @@ export default function(props){
     async function getUploadRes(fd){
       let res = await upload(fd)
       // console.log(res)
+      if(res && res.filename){
+        setDownFileName(res.filename);
+      }
     }
 
     if(fileObject){
@@ -37,11 +42,9 @@ export default function(props){
       let fd = new FormData();
       fd.append("file", fileObject);
       fd.append("filename", fileObject.name);
-      getUploadRes(fd);
+       getUploadRes(fd);
 
-      // if(res && res.filename){
-      //   setDownFileName(res.filename);
-      // }
+      
       if(weightParam){
         setIsDisabled(false);
       }
@@ -73,8 +76,9 @@ export default function(props){
   };
 
   async function getMapData() {
-    let payload = {filename};
-    let payload_wight = {filename, weight:weightParam};
+    let payload = {filename: downFileName};
+    let payload_wight = {filename:downFileName, weight:weightParam};
+
 
     let [location_data, sample_data, checked_data, weight_data] = await Promise.all([
       getLocationData(payload),
@@ -118,13 +122,14 @@ export default function(props){
 
   function downloadFile(){
     // console.log(downFileName)
-    window.open(encodeURI("http://127.0.0.1:5000/get/static_file?filename=model_file.xlsx"))
+    // window.open(encodeURI("http://127.0.0.1:5000/get/static_file?filename=model_file.xlsx"))
 
-    // if(downFileName){
-    //   window.open(encodeURI("http://127.0.0.1:5000/get/static_file?filename=model_file.xlsx"))
-    // }else{
-    //   message.info('请先上传文件')
-    // }
+    if(downFileName){
+      // console.log("http://127.0.0.1:5000/get/static_file?filename="+downFileName)
+      window.open(encodeURI("http://127.0.0.1:5000/get/static_file?filename="+downFileName))
+    }else{
+      message.info('请先上传文件')
+    }
   }
 
   return(
@@ -150,7 +155,7 @@ export default function(props){
             <Button onClick={submitParam} disabled={isDisabled}>提交</Button>
           </div>
 
-          <div className="params">选择参数模块：</div>
+          <div className="params">文件下载模块：</div>
           <div className="row-3">
             <Button onClick={downloadFile}>模板文件下载</Button>
           </div>
@@ -194,12 +199,13 @@ export default function(props){
           <div className="border"></div>
           <div className="container">
             <div className="c-1"><Chart1 locationData={locationData}/></div>
+            <div className="c-5"><Chart5 locationData={locationData}/></div>
             <div className="c-2">
-              <Chart2 checkedData={checkedData}/>
               {/* <div className="r-2"><Chart2 checkedData={checkedData}/></div> */}
+              <div className="r-3"><Chart3 sampleData={sampleData}/></div>
             </div>
             <div className='c3'>
-              <div className="r-3"><Chart3 sampleData={sampleData}/></div>
+              <Chart2 checkedData={checkedData}/>
             </div>
             <div className="c-4"><Chart4 weightData={weightData}/></div>
           </div>
