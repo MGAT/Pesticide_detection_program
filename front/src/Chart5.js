@@ -8,21 +8,11 @@ export default function (props) {
     // 基于准备好的dom，初始化echarts实例
         var myChart = echarts.init(document.getElementById('main_5'));
 
-        // let averageItem = props.locationData && Object.values(props.locationData).map(item => {
-        //   let value = {};
-        //   return Object.values(item).map(val => val.average)
-        //   sum = 0;
-        //   Object.keys(item).map(val => {
-        //     value[val] = Number(value[val]) item[val].average
-        //   })
-        // }) || []
-
-        // console.log(averageItem)
+        let averageItem = props.locationData && Object.keys(props.locationData.total_average_json).map(item => item) || [];
+        let averageValue = props.locationData && Object.values(props.locationData.total_average_json).map(item => item.toFixed(2)) || [];
         
         // 处理数据
         console.log(props)
-
-        let data = props.sampleData || [];
 
         myChart.setOption({
             tooltip: {},
@@ -42,10 +32,10 @@ export default function (props) {
               right:70,
               containLabel: true
             },
-            color: '#876FF1',
+            color: '#50DCDB',
             xAxis: {
                 // data: data.map(item => item.degree + " -- " + item.name),
-                data: data.map(item => item.name),
+                data: averageItem,
                 axisLabel: {
                   rotate: 60,
                   show: true,
@@ -59,12 +49,12 @@ export default function (props) {
             series: [{
                 name: "检出频次",
                 type: "bar",
-                data: data.map(item => item.cnt),
+                data: averageValue,
                 label: {
                   show: true,
                   position: 'top',
                   textStyle: {
-                      color: '#876FF1',
+                      color: '#50DCDB',
                       fontSize: 14,
                   },
                 },
@@ -72,7 +62,7 @@ export default function (props) {
         });
   })
 
-  const bg = "linear-gradient(90deg, #F9897C, #BF6CB2)"
+  const bg = "linear-gradient(90deg, #FFC826, #ff9900)"
 
   return (
     <div className="sample-chart">

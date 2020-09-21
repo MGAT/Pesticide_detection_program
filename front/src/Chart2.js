@@ -53,7 +53,7 @@ export default function (props) {
         });
   })
 
-  const bg = "linear-gradient(90deg, #FFC826, #ff9900)"
+  const bg = "linear-gradient(90deg, #67FFCB, #50C59D)"
 
   return (
     <div className="checked-chart">

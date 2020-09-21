@@ -46,19 +46,27 @@ def fill_out_sheet(product_params, data_sheet, ws):
                     'left': 0,
                     'right': 0
                 }
-
             elif title == 'B毒效得分LOD50':
+                toxicity_degree = 0
                 adi_toxicity = product_params.pop('adi_toxicity')
                 if adi_toxicity >= 0.01:
                     adi_toxicity = 0
+                    toxicity_degree = 2
                 elif adi_toxicity >= 0.001:
                     adi_toxicity = 1
+                    toxicity_degree = 3
                 elif adi_toxicity >= 0.0001:
                     adi_toxicity = 2
+                    toxicity_degree = 4
                 else:
                     adi_toxicity = 3
+                    toxicity_degree = 5
+
                 ws.write(data_row, i, adi_toxicity)
-                product_params["total_degrees"]['left'] += adi_toxicity
+                ws.write(data_row, i-1, toxicity_degree)
+                #由于B毒效得分LOD50 在 A毒性得分之后遍历
+                #所以只能处理B之后，再处理A
+                product_params["total_degrees"]['left'] += (adi_toxicity+toxicity_degree)
 
             elif title == 'F残留水平得分':
                 check_value = product_params.pop('check_value')
@@ -73,8 +81,10 @@ def fill_out_sheet(product_params, data_sheet, ws):
                 ws.write(data_row, i, check_value)
                 product_params["total_degrees"]['right'] += check_value
 
-            elif title == 'A毒性得分':
-                product_params["total_degrees"]['left'] += data_cells[i]
+            elif title == 'B毒效得分LOD50':
+                # 所以只能处理B之后，再处理A
+                #    product_params["total_degrees"]['left'] += data_cells[i]
+                pass
 
             elif title.startswith("风险得分S"):
                 ws.write(data_row, i, Decimal(product_params["total_degrees"]['left']) * product_params["total_degrees"]['right'])
@@ -118,6 +128,8 @@ def get_column_index_poison_json(sheet):
 def compose_location_json(sheet, column_index_poison_json):
     data_row = config.row_index_of_operation_order + 1
     location_json = {} #location : {name: averages}
+    # make averages
+    total_average_json = {}
 
     nrows = sheet.nrows
     while nrows > data_row:
@@ -135,25 +147,34 @@ def compose_location_json(sheet, column_index_poison_json):
         #iterate data
         for column_index, poison_json in column_index_poison_json.items():
             value = data_cells[int(column_index)]
+            if poison_json['name'] not in total_average_json:
+                total_average_json[poison_json['name']] = []
+
             if value:
                 value = Decimal(data_cells[int(column_index)])
-            else:
-                value = Decimal(0)
-            location_json[location][poison_json['name']].append(value)
+
+                location_json[location][poison_json['name']].append(value)
+                total_average_json[poison_json['name']].append(value)
 
         data_row += 1
 
-    #make averages
     for value in list(location_json.items()):
         average_json = value[1]
         for value1 in list(average_json.items()):
             average = value1[1]
             average_json[value1[0]] = {
-                "average": np.mean(average),
+                "average": np.mean(average) if average else None,
                 "arr": average
             }
 
-    return location_json
+    for value in list(total_average_json.items()):
+        average_arr = value[1]
+        total_average_json[value[0]] = np.mean(average_arr) if average_arr else None
+
+    return {
+        "location_json": location_json,
+        "total_average_json": total_average_json
+    }
 
 #按照一个样品中检出的农药残留种类排序
 def compose_sample_count(sheet):

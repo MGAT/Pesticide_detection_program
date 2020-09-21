@@ -18,20 +18,20 @@ export default function (props) {
     // 初始化echarts实例
     const myChart = echarts.init(document.getElementById('main_1'));
     
-    let provinceData=props.locationData && Object.keys(props.locationData).map(item=>{
-      let num = Object.values(props.locationData[item]).reduce((a,b)=>(a+b.average), 0)
+    let provinceData=props.locationData && Object.keys(props.locationData.location_json).map(item=>{
+      let num = Object.values(props.locationData.location_json[item]).reduce((a,b)=>(a+b.average), 0)
       return {name:item, value:num.toFixed(2)}
     }) || [];
     
     // console.log(provinceData)
     let initProvinceValue = !!provinceData.length&&provinceData[0].name || null
-    let barData = props.locationData&&Object.entries(props.locationData[provinceValue || initProvinceValue]).map(item=>({name:item[0], value:item[1].average.toFixed(2)})) || [];
+    let barData = props.locationData&&Object.entries(props.locationData.location_json[provinceValue || initProvinceValue]).map(item=>({name:item[0], value:(item[1].average ? item[1].average.toFixed(2) : 0)})) || [];
     
     if(barData.length && barData.length>24){
         let len = barData.length;
         setChartHeight(len*20)
     }
-    let locationArr = props.locationData&&Object.keys(props.locationData) || []
+    let locationArr = props.locationData&&Object.keys(props.locationData.location_json) || []
 
     const option = {
         title: [{                   //标题
